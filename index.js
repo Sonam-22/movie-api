@@ -111,7 +111,7 @@ app.put("/users/:id", (req, res) => {
   const { id } = req.params;
   const updatedUser = req.body;
 
-  let user = users.find((user) => user.id == id);
+  let user = users.find((user) => user.id === id);
 
   if (user) {
     user.userName = updatedUser.userName;
@@ -126,7 +126,7 @@ app.post("/users/:id/:title", (req, res) => {
   const { id, title } = req.params;
   const updatedUser = req.body;
 
-  let user = users.find((user) => user.id == id);
+  let user = users.find((user) => user.id === id);
 
   if (user) {
     user.favorites.push(title);
@@ -140,7 +140,7 @@ app.delete("/users/:id/:title", (req, res) => {
   const { id, title } = req.params;
   const updatedUser = req.body;
 
-  let user = users.find((user) => user.id == id);
+  let user = users.find((user) => user.id === id);
 
   if (user) {
     user.favorites = user.favorites.filter((title) => title !== title);
@@ -154,10 +154,10 @@ app.delete("/users/:id/:title", (req, res) => {
 app.delete("/users/:id", (req, res) => {
   const { id } = req.params;
 
-  let user = users.find((user) => user.id == id);
+  let user = users.find((user) => user.id === id);
 
   if (user) {
-    users = users.filter((user) => user.id != id);
+    users = users.filter((user) => user.id !== id);
     res.status(200).send(`user ${id} has been deleted`);
   } else {
     res.status(400).send("no such user");
@@ -187,8 +187,8 @@ app.get("/movies/:title", (req, res) => {
 
 //GET route located at the endpoint "/movies/title" which returns a json object with a single movie
 app.get("/movies/genre/:name", (req, res) => {
-  const { genreName } = req.params;
-  const genre = topMovies.find((movie) => movie.genre.name === genreName).genre;
+  const { name } = req.params;
+  const genre = topMovies.find((movie) => movie.genre.name === name).genre;
 
   if (genre) {
     res.status(200).json(genre);
@@ -199,9 +199,9 @@ app.get("/movies/genre/:name", (req, res) => {
 
 //GET route located at the endpoint "/movies/title" which returns a json object with a single movie
 app.get("/movies/director/:name", (req, res) => {
-  const { directorName } = req.params;
+  const { name } = req.params;
   const director = topMovies.find(
-    (movie) => movie.director.name === directorName
+    (movie) => movie.director.name === name
   ).director;
   if (director) {
     res.status(200).json(director);
