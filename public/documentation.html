@@ -3,15 +3,211 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Movies</title>
+    <title>Movies App</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3"
+      crossorigin="anonymous"
+    />
   </head>
-  <body>
-    <h1>myFlix</h1>
-    <p>
-      To build the server-side component of a “movies” web application. The web
-      application will provide users with access to information about different
-      movies, directors, and genres. Users will be able to sign up, update their
-      personal information, and create a list of their favorite movies.
-    </p>
+  <body class="container" style="--bs-body-color: #0000ff">
+    <h1 class="h1">Movies API</h1>
+    <table
+      class="table table-hover table-bordered border-primary shadow p-3 mb-5 bg-body rounded"
+    >
+      <thead>
+        <th>Business Logic</th>
+        <th>URL</th>
+        <th>HTTP Method</th>
+        <th>Query Parameters</th>
+        <th>Request body data format</th>
+        <th>Response body data format</th>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Return a list of ALL movies to the user</td>
+          <td>/movies</td>
+          <td>GET</td>
+          <td>None</td>
+          <td>None</td>
+          <td>A JSON object holding data about all movies</td>
+        </tr>
+        <tr>
+          <td>Return data about a single movie by title to the user</td>
+          <td>/movies/[title]</td>
+          <td>GET</td>
+          <td>:title</td>
+          <td>None</td>
+          <td>
+            A JSON object holding data about the selected movie containing
+            description, genre, director and img URL Example:
+            <pre>
+              <code>
+                {
+                  title: "",
+                  year: "",
+                  genre: {
+                      name: "",
+                      Description: ""
+                  },
+                  director: {
+                      name: "",
+                      bio: "",
+                      birth: "",
+                      death: "-"
+                  },
+                  imgURL: "-",
+                  featured: 
+              }
+              </code>
+            </pre>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            Return data about a genre (description) by name/title (e.g.,
+            “Thriller”)
+          </td>
+          <td>/movies/genres/[name]</td>
+          <td>GET</td>
+          <td>:name</td>
+          <td>None</td>
+          <td>
+            A JSON object holding data about the selected genre
+            <pre>
+              <code>
+    { 
+      
+      name: "-",
+      description:"-"
+    
+    }
+              </code>
+            </pre>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            Return data about a director (bio, birth year, death year) by name
+          </td>
+          <td>/movies/director/[name]</td>
+          <td>GET</td>
+          <td>:name</td>
+          <td>None</td>
+          <td>
+            A JSON object holding data about the selected director Example:
+            <pre>
+              <code>
+    { 
+      
+        name: "-",
+        bio: "-",
+        birth: "-",
+        death: "-"
+    
+    }
+              </code>
+            </pre>
+          </td>
+        </tr>
+        <tr>
+          <td>Allow new users to register</td>
+          <td>/users</td>
+          <td>POST</td>
+          <td>None</td>
+          <td>
+            A JSON object holding data about the user to add Example:
+            <pre>
+              <code>
+    { 
+      "username": "-", 
+      "email": "-", 
+      "birthday": "-", 
+      "favorites": [
+        "-", "-"
+      ] 
+    }
+              </code>
+            </pre>
+          </td>
+          <td>
+            A JSON object holding data about added user including ID Example:
+            <pre>
+              <code>
+                { 
+                  id: "",
+                  username: "", 
+                  email: "", 
+                  birthday: "", 
+                  favorites: [
+                    "-", "-"
+                  ] 
+                }
+                          </code>
+                        </pre>
+          </td>
+        </tr>
+        <tr>
+          <td>Allow users to update their user info (username)</td>
+          <td>/users/[id]</td>
+          <td>PUT</td>
+          <td>:id</td>
+          <td>
+            A JSON object holding the new username Example:
+            <pre>
+              <code>
+    { 
+      "username": "-"
+    }
+              </code>
+            </pre>
+          </td>
+          <td>
+            A text message indicating the username was updated
+            <pre>
+              <code>
+    { 
+      { 
+        id: "",
+        username: "", 
+        email: "", 
+        
+        birthday: "", 
+        favorites: [
+          ""
+        ] 
+      }
+    }
+              </code>
+            </pre>
+          </td>
+        </tr>
+        <tr>
+          <td>Allow users to add a movie to their list of favorites</td>
+          <td>/users/[id]/[title]</td>
+          <td>POST</td>
+          <td>:id, :title</td>
+          <td>None</td>
+          <td>A text message indicating the movie was added</td>
+        </tr>
+        <tr>
+          <td>Allow users to remove a movie from their list of favorites</td>
+          <td>/users/[id]/[title]</td>
+          <td>DELETE</td>
+          <td>:id, :title</td>
+          <td>None</td>
+          <td>A text message indicating the movie was deleted</td>
+        </tr>
+        <tr>
+          <td>Allow existing users to deregister</td>
+          <td>/users/[id]</td>
+          <td>DELETE</td>
+          <td>:id</td>
+          <td>None</td>
+          <td>A message indicating the user was deregistered</td>
+        </tr>
+      </tbody>
+    </table>
   </body>
 </html>
