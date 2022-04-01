@@ -45,20 +45,20 @@
             <pre>
               <code>
                 {
-                  title: "",
-                  year: "",
-                  genre: {
-                      name: "",
-                      Description: ""
+                  "Genre": {
+                      "Name": "Drama",
+                      "Description": "The drama ......."
                   },
-                  director: {
-                      name: "",
-                      bio: "",
-                      birth: "",
-                      death: "-"
+                  "Director": {
+                      "Name": "Nancy Meyers",
+                      "Bio": "Nancy Meyers was ......",
+                      "Birth": "1949"
                   },
-                  imgURL: "-",
-                  featured: 
+                  "_id": "6240cb1a6860d5056d1e1d57",
+                  "Title": "The Intern",
+                  "Description": "Seventy-year-old ......",
+                  "ImagePath": "https://www.imdb.com.......",
+                  "Featured": true
               }
               </code>
             </pre>
@@ -69,7 +69,7 @@
             Return data about a genre (description) by name/title (e.g.,
             “Thriller”)
           </td>
-          <td>/movies/genres/[name]</td>
+          <td>/movies/genre/[name]</td>
           <td>GET</td>
           <td>:name</td>
           <td>None</td>
@@ -77,12 +77,14 @@
             A JSON object holding data about the selected genre
             <pre>
               <code>
-    { 
-      
-      name: "-",
-      description:"-"
     
+      
+    {
+        "Name": "Drama",
+        "Description": "The drama...."
     }
+    
+    
               </code>
             </pre>
           </td>
@@ -99,14 +101,11 @@
             A JSON object holding data about the selected director Example:
             <pre>
               <code>
-    { 
-      
-        name: "-",
-        bio: "-",
-        birth: "-",
-        death: "-"
-    
-    }
+                {
+                  "Name": "Nancy Meyers",
+                  "Bio": "Nancy Meyers.....",
+                  "Birth": "1949"
+              }
               </code>
             </pre>
           </td>
@@ -121,11 +120,12 @@
             <pre>
               <code>
     { 
-      "username": "-", 
-      "email": "-", 
-      "birthday": "-", 
-      "favorites": [
-        "-", "-"
+      "userName": "kriti", 
+      "password": "xyz@123#",
+      "email": "kriti@gmail.com", 
+      "birthday": "1980-02-15", 
+      "favoriteMovies": [
+        "6240cbb16860d5056d1e1d5a"  
       ] 
     }
               </code>
@@ -136,29 +136,35 @@
             <pre>
               <code>
                 { 
-                  id: "",
-                  username: "", 
-                  email: "", 
-                  birthday: "", 
-                  favorites: [
-                    "-", "-"
-                  ] 
+              
+                  "userName": "kriti", 
+                  "password": "xyz@123#",
+                  "email": "kriti@gmail.com", 
+                  "birthday": "1980-02-15T00:00:00.0007", 
+                  "favorites": [
+                  "6240cbb16860d5056d1e1d5a" 
+                  ],
+                  "_id": "62464092a5d42367408cd513"
+
                 }
                           </code>
                         </pre>
           </td>
         </tr>
         <tr>
-          <td>Allow users to update their user info (username)</td>
-          <td>/users/[id]</td>
+          <td>Allow users to update their user info</td>
+          <td>/users/[userName]</td>
           <td>PUT</td>
-          <td>:id</td>
+          <td>:userName</td>
           <td>
             A JSON object holding the new username Example:
             <pre>
               <code>
     { 
-      "username": "-"
+      "userName": "annu",
+      "password": "annu@123#",
+      "email": "annu@gmail.com",
+      "birthday": "1980-02-15"
     }
               </code>
             </pre>
@@ -167,45 +173,85 @@
             A text message indicating the username was updated
             <pre>
               <code>
-    { 
+     
       { 
-        id: "",
-        username: "", 
-        email: "", 
-        
-        birthday: "", 
-        favorites: [
-          ""
+        "_id": "6240d4226860d5056d1e1d63",
+        "userName": "annu", 
+        "password":"annu@123#",
+        email: "annu@gmail.com", 
+        birthday: "1980-02-15100:00:00.000,", 
+        "favoriteMovies": [
+          "6240cbb16860d5056d1e1d5a"
         ] 
       }
-    }
+    
               </code>
             </pre>
           </td>
         </tr>
         <tr>
           <td>Allow users to add a movie to their list of favorites</td>
-          <td>/users/[id]/[title]</td>
+          <td>/users/[userName]/movies/[MovieId]</td>
           <td>POST</td>
-          <td>:id, :title</td>
+          <td>:userName, :MovieId</td>
           <td>None</td>
-          <td>A text message indicating the movie was added</td>
+          <td>
+            A JSON object holding data about the updated user
+            <pre>
+              <code>
+                {
+                  "_id": "6240d4476860d5056d1e1d64",
+                  "userName": "sanu",
+                  "password": "fgh#@123",
+                  "email: "sanu@gmail.com";
+                  "birthday": "1980-02-10T00:00:00.000Z",
+                  "favoriteMovies": [
+                  "6240cc586860d5056d1e1d5e",
+                  "6240cc756860d5056d1e1d5f",
+                  "6240cbb16860d50566d1e1d5a"
+                  ]
+                }
+
+              </code>
+            </pre>
+          </td>
         </tr>
         <tr>
           <td>Allow users to remove a movie from their list of favorites</td>
-          <td>/users/[id]/[title]</td>
+          <td>/users/[userName]/movies/[MovieId]</td>
           <td>DELETE</td>
-          <td>:id, :title</td>
+          <td>:userName, :MovieId</td>
           <td>None</td>
-          <td>A text message indicating the movie was deleted</td>
+          <td>
+            A JSON object holding data about the updated user
+            <pre>
+              <code>
+                {
+                  "_id": "6240d4476860d5056d1e1d64",
+                  "userName": "sanu",
+                  "password": "fgh#@123",
+                  "email: "sanu@gmail.com";
+                  "birthday": "1980-02-10T00:00:00.000Z",
+                  "favoriteMovies": [
+                  "6240cc586860d5056d1e1d5e",
+                  "6240cc756860d5056d1e1d5f"
+                  ]
+                }
+
+              </code>
+            </pre>
+          </td>
         </tr>
         <tr>
           <td>Allow existing users to deregister</td>
-          <td>/users/[id]</td>
+          <td>/users/[userName]</td>
           <td>DELETE</td>
-          <td>:id</td>
+          <td>:userName</td>
           <td>None</td>
-          <td>A message indicating the user was deregistered</td>
+          <td>
+            A success message indicating that the profile was successfully
+            deleted.
+          </td>
         </tr>
       </tbody>
     </table>
