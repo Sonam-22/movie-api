@@ -1,84 +1,21 @@
 const express = require("express"),
   bodyParser = require("body-parser"),
   morgan = require("morgan"),
-  uuid = require("uuid");
+  uuid = require("uuid"),
+  mongoose = require("mongoose"),
+  Models = require("./models.js");
+Mongo = require("mongodb");
+
+const Movies = Models.Movies;
+const Users = Models.Users;
+
+mongoose.connect("mongodb://localhost:27017/myFlixDB", {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+});
 
 const app = express();
 
-let users = [
-  {
-    id: "1",
-    userName: "sam",
-    email: "sam14@gmail.com",
-    birthday: "19/10/1997",
-    favorites: ["The Intern", "Andhadhu", "Chennai Express"],
-  },
-  {
-    id: "2",
-    userName: "mini",
-    email: "mini14@gmail.com",
-    birthday: "15/11/1998",
-    favorites: ["Chennai Expres"],
-  },
-];
-
-//list of favorite movies
-let topMovies = [
-  {
-    title: "The Intern",
-    year: "2015",
-    genre: {
-      name: "Drama",
-      description:
-        "The drama genre features stories with high stakes and a lot of conflicts. They’re plot-driven and demand that every character and scene move the story forward. Dramas follow a clearly defined narrative plot structure, portraying real-life scenarios or extreme situations with emotionally-driven characters.",
-    },
-
-    director: {
-      name: "Nancy Meyers",
-      bio: "Nancy Meyers was born in Philadelphia.She is American writer, director, and producer who was best known for her romantic comedies, several of which centre on middle-aged women.",
-      birth: "1949",
-      death: "-",
-    },
-    imgURL: "-",
-    featured: false,
-  },
-  {
-    title: "Andhadhun",
-    director: "Sriram Raghavan",
-  },
-  {
-    title: "Mimi",
-    director: "Laxman Utekar",
-  },
-  {
-    title: "Chennai Express",
-    director: "Rohit Shetty",
-  },
-  {
-    title: "Singham",
-    director: "Rohit Shetty",
-  },
-  {
-    title: "Drishyam",
-    director: "Nishikant Kamat",
-  },
-  {
-    title: "Raid",
-    director: "Raj Kumar Gupta",
-  },
-  {
-    title: "Jolly LLB",
-    director: "Subhash Kapoor",
-  },
-  {
-    title: "Pyaar Ka Punchnama",
-    director: "Luv Ranjan",
-  },
-  {
-    title: "Queen",
-    director: "Vikas Bahl",
-  },
-];
 //morgan function "use"
 app.use(morgan("common"));
 
@@ -95,119 +32,183 @@ app.use(bodyParser.json());
 
 //POST route to add new User
 app.post("/users", (req, res) => {
-  const newUser = req.body;
-
-  if (newUser.userName) {
-    newUser.id = uuid.v4();
-    users.push(newUser);
-    res.status(201).json(newUser);
-  } else {
-    res.status(400).send("users need names");
-  }
+  Users.findOne({ userName: req.body.userName })
+    .then((existingUser) => {
+      if (existingUser) {
+        // If the same username already exists, throw an error
+        return res
+          .status(400)
+          .send(
+            "User with the Username " + req.body.userName + " already exists!"
+          );
+      } else {
+        // If the username is unique, create a new user with the given parameters from the request body
+        Users.create({
+          userName: req.body.userName,
+          password: req.body.password,
+          email: req.body.email,
+          birthday: req.body.birthday,
+          favouriteMovies: req.body.favouriteMovies.map(
+            (m) => new Mongo.ObjectId(m)
+          ),
+        })
+          .then((createdUser) => {
+            res.status(201).json(createdUser);
+          })
+          .catch((err) => {
+            console.error(err);
+            res.status(500).send("Error: " + err);
+          });
+      }
+    })
+    .catch((err) => {
+      console.error(err);
+      res.status(500).send("Error: " + err);
+    });
 });
 
-//PUT route to update User
-app.put("/users/:id", (req, res) => {
-  const { id } = req.params;
-  const updatedUser = req.body;
-
-  let user = users.find((user) => user.id === id);
-
-  if (user) {
-    user.userName = updatedUser.userName;
-    res.status(200).json(user);
-  } else {
-    res.status(400).send("no such user");
-  }
+// UPDATE: Allow users to update their user info (find by username), expecting request body with updated info
+app.put("/users/:userName", (req, res) => {
+  Users.findOneAndUpdate(
+    { userName: req.params.userName }, // Find user by existing username
+    {
+      $set: {
+        // Info from request body that can be updated
+        userName: req.body.userName,
+        password: req.body.password,
+        email: req.body.email,
+        birthday: req.body.birthday,
+      },
+    },
+    { new: true }
+  ) // Return the updated document
+    .then((updatedUser) => {
+      res.json(updatedUser); // Return json object of updatedUser
+    })
+    .catch((err) => {
+      console.error(err);
+      res.status(500).send("Error: " + err);
+    });
 });
 
 //POST route to add movie to favorite
-app.post("/users/:id/:title", (req, res) => {
-  const { id, title } = req.params;
-  const updatedUser = req.body;
 
-  let user = users.find((user) => user.id === id);
-
-  if (user) {
-    user.favorites.push(title);
-    res.status(200).send(`${title} has been added to the user ${id}´s array`);
-  } else {
-    res.status(400).send("no such user");
-  }
+app.post("/users/:userName/movies/:MovieID", (req, res) => {
+  Users.findOneAndUpdate(
+    { userName: req.params.userName }, // Find user by username
+    { $push: { favouriteMovies: new Mongo.ObjectId(req.params.MovieID) } }, // Add movie to the list
+    { new: true }
+  ) // Return the updated document
+    .then((updatedUser) => {
+      res.json(updatedUser); // Return json object of updatedUser
+    })
+    .catch((err) => {
+      console.error(err);
+      res.status(500).send("Error: " + err);
+    });
 });
-//DELETE route to delete favorite movie from list
-app.delete("/users/:id/:title", (req, res) => {
-  const { id, title } = req.params;
-  const updatedUser = req.body;
-
-  let user = users.find((user) => user.id === id);
-
-  if (user) {
-    user.favorites = user.favorites.filter((title) => title !== title);
-    res.status(200).send(`${title} has been deleted to the user ${id}´s array`);
-  } else {
-    res.status(400).send("no such user");
-  }
-});
-
-//DELETE route to delete user
-app.delete("/users/:id", (req, res) => {
-  const { id } = req.params;
-
-  let user = users.find((user) => user.id === id);
-
-  if (user) {
-    users = users.filter((user) => user.id !== id);
-    res.status(200).send(`user ${id} has been deleted`);
-  } else {
-    res.status(400).send("no such user");
-  }
+//DELETE : Allow users to remove a movie from their list of favorites
+app.delete("/users/:userName/movies/:MovieID", (req, res) => {
+  Users.findOneAndUpdate(
+    { userName: req.params.userName }, // Find user by username
+    { $pull: { favouriteMovies: new Mongo.ObjectId(req.params.MovieID) } }, // Remove movie from the list
+    { new: true }
+  ) // Return the updated document
+    .then((updatedUser) => {
+      res.json(updatedUser); // Return json object of updatedUser
+    })
+    .catch((err) => {
+      console.error(err);
+      res.status(500).send("Error: " + err);
+    });
 });
 
+//Allow existing users to deregister
+app.delete("/users/:userName", (req, res) => {
+  Users.findOneAndRemove({ userName: req.params.userName }) // Find user by username
+    .then((users) => {
+      if (users) {
+        // If user was found, return success message, else return error
+        res
+          .status(200)
+          .send(
+            `User with the Username ${req.params.userName} was sucessfully deleted.`
+          );
+      } else {
+        res
+          .status(400)
+          .send(`User with the Username ${req.params.userName} was not found.`);
+      }
+    })
+    .catch((err) => {
+      console.error(err);
+      res.status(500).send("Error: " + err);
+    });
+});
+// Read
 app.get("/", (req, res) => {
   res.send("Welcome to my movie list!");
 });
 
-//GET route located at the endpoint "/movies" which returns a json object in form of a  list of top 10 movies with the status 200 "ok"
+// Get all movies
 app.get("/movies", (req, res) => {
-  res.status(200).json(topMovies);
+  Movies.find()
+    .then((movies) => {
+      res.status(200).json(movies);
+    })
+    .catch((err) => {
+      res.status(500).send("Error: " + err);
+    });
 });
 
-//GET route located at the endpoint "/movies/title" which returns a json object with a single movie
+//Get a movie by title
 app.get("/movies/:title", (req, res) => {
-  const { title } = req.params;
-  const movie = topMovies.find((movie) => movie.title === title);
-
-  if (movie) {
-    res.status(200).json(movie);
-  } else {
-    res.status(404).send("no such movie");
-  }
+  Movies.findOne({ Title: req.params.title }) // Find the movie by title
+    .then((movies) => {
+      if (movies) {
+        // If movie was found, return json, else throw error
+        res.status(200).json(movies);
+      } else {
+        res.status(400).send("Movie not found");
+      }
+    })
+    .catch((err) => {
+      res.status(500).send("Error: " + err);
+    });
 });
 
-//GET route located at the endpoint "/movies/title" which returns a json object with a single movie
+//GET data about a genre (description) by name/title
+
 app.get("/movies/genre/:name", (req, res) => {
-  const { name } = req.params;
-  const genre = topMovies.find((movie) => movie.genre.name === name).genre;
-
-  if (genre) {
-    res.status(200).json(genre);
-  } else {
-    res.status(404).send("no such genre");
-  }
+  Movies.findOne({ "Genre.Name": req.params.name }) // Find one movie with the genre by genre name
+    .then((movies) => {
+      if (movies) {
+        // If a movie with the genre was found, return json of genre info, else throw error
+        res.status(200).json(movies.Genre);
+      } else {
+        res.status(400).send("Genre not found");
+      }
+    })
+    .catch((err) => {
+      res.status(500).send("Error: " + err);
+    });
 });
 
-//GET route located at the endpoint "/movies/title" which returns a json object with a single movie
+//GET data about a director (bio, birth year, death year) by name
+
 app.get("/movies/director/:name", (req, res) => {
-  const { name } = req.params;
-  const director = topMovies.find(
-    (movie) => movie.director.name === name
-  ).director;
-  if (director) {
-    res.status(200).json(director);
-  } else {
-    res.status(404).send("no such director");
-  }
+  Movies.findOne({ "Director.Name": req.params.name }) // Find one movie with the director by name
+    .then((movies) => {
+      if (movies) {
+        // If a movie with the director was found, return json of director info, else throw error
+        res.status(200).json(movies.Director);
+      } else {
+        res.status(400).send("Director not found");
+      }
+    })
+    .catch((err) => {
+      res.status(500).send("Error: " + err);
+    });
 });
 
 // error-handling middleware function
