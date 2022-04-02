@@ -48,7 +48,7 @@ app.post("/users", (req, res) => {
           password: req.body.password,
           email: req.body.email,
           birthday: req.body.birthday,
-          favouriteMovies: req.body.favouriteMovies.map(
+          favouriteMovies: (req.body.favouriteMovies || []).map(
             (m) => new Mongo.ObjectId(m)
           ),
         })
@@ -92,15 +92,26 @@ app.put("/users/:userName", (req, res) => {
 });
 
 //POST route to add movie to favorite
-
 app.post("/users/:userName/movies/:MovieID", (req, res) => {
+  const movieId = new Mongo.ObjectId(req.params.MovieID);
+  const userName = req.params.userName;
+
   Users.findOneAndUpdate(
-    { userName: req.params.userName }, // Find user by username
-    { $push: { favouriteMovies: new Mongo.ObjectId(req.params.MovieID) } }, // Add movie to the list
+    {
+      userName: userName,
+      favouriteMovies: { $nin: [movieId] },
+    }, // Find user by username
+    { $push: { favouriteMovies: movieId } }, // Add movie to the list
     { new: true }
   ) // Return the updated document
     .then((updatedUser) => {
-      res.json(updatedUser); // Return json object of updatedUser
+      if (!updatedUser) {
+        return res
+          .status(409)
+          .send(`Favourite movie ${movieId} already exists for ${userName}`);
+      }
+      res.status(200).json(updatedUser);
+      // Return json object of updatedUser
     })
     .catch((err) => {
       console.error(err);
