@@ -22,6 +22,24 @@ const app = express();
 //morgan function "use"
 app.use(morgan("common"));
 
+// CORS integration
+const cors = require("cors");
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.indexOf(origin) === -1) {
+        // origin is not included in list of allowedOrigins
+        let message =
+          "The CORS policy for this application doesn't allow access from origin " +
+          origin;
+        return callback(new Error(message), false);
+      }
+      return callback(null, true);
+    },
+  })
+);
+
 //static file given access via express static
 app.use(express.static("public"));
 
