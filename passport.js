@@ -25,8 +25,13 @@ passport.use(
         if (!user) {
           console.log("incorrect username");
           return callback(null, false, {
-            message: "Incorrect username or password.",
+            message: "Incorrect username .",
           });
+        }
+        // Password wrong (use validatePassword to compare to hashed password stored in DB)
+        if (!user.validatePassword(password)) {
+          console.log("incorrent password");
+          return callback(null, false, { message: "Incorrent password." });
         }
         console.log("finished");
         return callback(null, user);

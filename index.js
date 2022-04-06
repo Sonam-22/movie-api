@@ -56,6 +56,7 @@ let auth = require("./auth")(app);
 
 //POST route to add new User
 app.post("/users", (req, res) => {
+  let hashedPassword = Users.hashPassword(req.body.password); // Create hashedPassword from given Password
   Users.findOne({ userName: req.body.userName })
     .then((existingUser) => {
       if (existingUser) {
@@ -69,7 +70,7 @@ app.post("/users", (req, res) => {
         // If the username is unique, create a new user with the given parameters from the request body
         Users.create({
           userName: req.body.userName,
-          password: req.body.password,
+          password: hashedPassword,
           email: req.body.email,
           birthday: req.body.birthday,
           favouriteMovies: (req.body.favouriteMovies || []).map(
