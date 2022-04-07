@@ -131,6 +131,7 @@ app.put(
   "/users/:userName",
   passport.authenticate("jwt", { session: false }),
   (req, res) => {
+    let hashedPassword = Users.hashPassword(req.body.password);
     Users.findOneAndUpdate(
       { userName: req.params.userName }, // Find user by existing username
       {
