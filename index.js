@@ -234,7 +234,7 @@ app.delete(
   }
 );
 // Read
-app.get("/", passport.authenticate("jwt", { session: false }), (req, res) => {
+app.get("/", (req, res) => {
   res.send("Welcome to my movie list!");
 });
 
