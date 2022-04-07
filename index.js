@@ -9,7 +9,7 @@ const express = require("express"),
 
 // For input validation
 const { check, validationResult } = require("express-validator");
-const authProvider = require("./auth");
+const { authProvider, ensureSameUser } = require("./auth");
 
 require("./passport");
 
@@ -129,6 +129,7 @@ app.post(
 // UPDATE: Allow users to update their user info (find by username), expecting request body with updated info
 app.put(
   "/users/:userName",
+  ensureSameUser,
   passport.authenticate("jwt", { session: false }),
   (req, res) => {
     let hashedPassword = Users.hashPassword(req.body.password);
@@ -158,6 +159,7 @@ app.put(
 //POST route to add movie to favorite
 app.post(
   "/users/:userName/movies/:MovieID",
+  ensureSameUser,
   passport.authenticate("jwt", { session: false }),
   (req, res) => {
     const movieId = new Mongo.ObjectId(req.params.MovieID);
@@ -189,6 +191,7 @@ app.post(
 //DELETE : Allow users to remove a movie from their list of favorites
 app.delete(
   "/users/:userName/movies/:MovieID",
+  ensureSameUser,
   passport.authenticate("jwt", { session: false }),
   (req, res) => {
     Users.findOneAndUpdate(
@@ -209,6 +212,7 @@ app.delete(
 //Allow existing users to deregister
 app.delete(
   "/users/:userName",
+  ensureSameUser,
   passport.authenticate("jwt", { session: false }),
   (req, res) => {
     Users.findOneAndRemove({ userName: req.params.userName }) // Find user by username

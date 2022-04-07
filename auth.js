@@ -1,3 +1,4 @@
+const passportJWT = require("passport-jwt");
 const jwtSecret = "343rdfdfreerdggg5";
 
 const jwt = require("jsonwebtoken"),
@@ -5,15 +6,33 @@ const jwt = require("jsonwebtoken"),
 
 require("./passport");
 
+const SIGNING_ALGORITHM = "HS256";
+
 let generateJWTToken = (user) => {
   return jwt.sign(user, jwtSecret, {
     subject: user.userName,
     expiresIn: "7d",
-    algorithm: "HS256",
+    algorithm: SIGNING_ALGORITHM,
   });
 };
 
-module.exports = (router) => {
+const ensureSameUser = (req, res, next) => {
+  const userName = req.params.userName;
+  const token = passportJWT.ExtractJwt.fromAuthHeaderAsBearerToken()(req);
+  const decoded = jwt.verify(token, jwtSecret, {
+    algorithms: [SIGNING_ALGORITHM],
+  });
+  if (decoded.userName !== userName) {
+    const error = new Error(
+      "You are trying to operate on someone else's record. Don't be oversmart."
+    );
+    console.error(error);
+    return res.status(400).json(error.message);
+  }
+  next();
+};
+
+const authProvider = (router) => {
   router.post("/login", (req, res) => {
     passport.authenticate("local", { session: false }, (error, user, info) => {
       if (error || !user) {
@@ -32,4 +51,9 @@ module.exports = (router) => {
       });
     })(req, res);
   });
+};
+
+module.exports = {
+  authProvider,
+  ensureSameUser,
 };
