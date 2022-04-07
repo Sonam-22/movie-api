@@ -7,6 +7,10 @@ const express = require("express"),
   Mongo = require("mongodb"),
   passport = require("passport");
 
+// For input validation
+const { check, validationResult } = require("express-validator");
+const authProvider = require("./auth");
+
 require("./passport");
 
 const Movies = Models.Movies;
@@ -52,45 +56,70 @@ app.use(
 
 app.use(bodyParser.json());
 
-let auth = require("./auth")(app);
+//integrating auth.js file for authentication and authorization using HTTP and JWSToken
+let auth = authProvider(app);
 
 //POST route to add new User
-app.post("/users", (req, res) => {
-  let hashedPassword = Users.hashPassword(req.body.password); // Create hashedPassword from given Password
-  Users.findOne({ userName: req.body.userName })
-    .then((existingUser) => {
-      if (existingUser) {
-        // If the same username already exists, throw an error
-        return res
-          .status(400)
-          .send(
-            "User with the Username " + req.body.userName + " already exists!"
-          );
-      } else {
-        // If the username is unique, create a new user with the given parameters from the request body
-        Users.create({
-          userName: req.body.userName,
-          password: hashedPassword,
-          email: req.body.email,
-          birthday: req.body.birthday,
-          favouriteMovies: (req.body.favouriteMovies || []).map(
-            (m) => new Mongo.ObjectId(m)
-          ),
-        })
-          .then((createdUser) => {
-            res.status(201).json(createdUser);
+// Username, Password & Email are required fields!
+app.post(
+  "/users",
+  // Validation logic
+  [
+    check("userName", "Username is required (min 5 characters).").isLength({
+      min: 5,
+    }),
+    check(
+      "userName",
+      "Username contains non alphanumeric characters - not allowed."
+    ).isAlphanumeric(),
+    check("password", "Password is required.").not().isEmpty(),
+    check("email", "Email does not appear to be valid.").isEmail(),
+  ],
+  (req, res) => {
+    // Check validation object for errors
+    let errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+      return res.status(422).json({ errors: errors.array() });
+    }
+
+    let hashedPassword = Users.hashPassword(req.body.password); // Create hashedPassword from given Password
+    // Create new user
+    Users.findOne({ userName: req.body.userName })
+      .then((existingUser) => {
+        if (existingUser) {
+          // If the same username already exists, throw an error
+          return res
+            .status(400)
+            .send(
+              "User with the Username " + req.body.userName + " already exists!"
+            );
+        } else {
+          // If the username is unique, create a new user with the given parameters from the request body
+          Users.create({
+            userName: req.body.userName,
+            password: hashedPassword,
+            email: req.body.email,
+            birthday: req.body.birthday,
+            favouriteMovies: (req.body.favouriteMovies || []).map(
+              (m) => new Mongo.ObjectId(m)
+            ),
           })
-          .catch((err) => {
-            console.error(err);
-            res.status(500).send("Error: " + err);
-          });
-      }
-    })
-    .catch((err) => {
-      console.error(err);
-      res.status(500).send("Error: " + err);
-    });
-});
+            .then((createdUser) => {
+              res.status(201).json(createdUser);
+            })
+            .catch((err) => {
+              console.error(err);
+              res.status(500).send("Error: " + err);
+            });
+        }
+      })
+      .catch((err) => {
+        console.error(err);
+        res.status(500).send("Error: " + err);
+      });
+  }
+);
 
 // UPDATE: Allow users to update their user info (find by username), expecting request body with updated info
 app.put(
