@@ -137,7 +137,7 @@ app.put(
         $set: {
           // Info from request body that can be updated
           userName: req.body.userName,
-          password: req.body.password,
+          password: hashedPassword,
           email: req.body.email,
           birthday: req.body.birthday,
         },
