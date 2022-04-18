@@ -244,19 +244,15 @@ app.get("/", (req, res) => {
 });
 
 // Get all movies
-app.get(
-  "/movies",
-  passport.authenticate("jwt", { session: false }),
-  (req, res) => {
-    Movies.find()
-      .then((movies) => {
-        res.status(200).json(movies);
-      })
-      .catch((err) => {
-        res.status(500).send("Error: " + err);
-      });
-  }
-);
+app.get("/movies", (req, res) => {
+  Movies.find()
+    .then((movies) => {
+      res.status(200).json(movies);
+    })
+    .catch((err) => {
+      res.status(500).send("Error: " + err);
+    });
+});
 
 //Get a movie by title
 app.get(
