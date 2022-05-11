@@ -136,17 +136,19 @@ app.put(
   ensureSameUser,
   passport.authenticate("jwt", { session: false }),
   (req, res) => {
-    let hashedPassword = Users.hashPassword(req.body.password);
+    const updatedUser = {
+      // Info from request body that can be updated
+      userName: req.body.userName,
+      email: req.body.email,
+      birthday: req.body.birthday,
+    };
+    if (req.body.password) {
+      updatedUser.password = Users.hashPassword(req.body.password);
+    }
     Users.findOneAndUpdate(
       { userName: req.params.userName }, // Find user by existing username
       {
-        $set: {
-          // Info from request body that can be updated
-          userName: req.body.userName,
-          password: hashedPassword,
-          email: req.body.email,
-          birthday: req.body.birthday,
-        },
+        $set: updatedUser,
       },
       { new: true }
     ) // Return the updated document
