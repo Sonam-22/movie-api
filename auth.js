@@ -47,10 +47,10 @@ const authProvider = (router) => {
           res.send(error);
         }
         let token = generateJWTToken(user.toJSON());
-        const noPassword = {
-          ...user,
-          password: null,
-        };
+
+        const noPassword = user.toJSON();
+        delete noPassword.passport;
+
         return res.json({ user: noPassword, token });
       });
     })(req, res);
