@@ -153,7 +153,9 @@ app.put(
       { new: true }
     ) // Return the updated document
       .then((updatedUser) => {
-        res.json(updatedUser); // Return json object of updatedUser
+        const noPassword = updatedUser;
+        delete noPassword.password;
+        res.json(noPassword); // Return json object of updatedUser
       })
       .catch((err) => {
         console.error(err);
