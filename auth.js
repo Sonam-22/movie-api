@@ -49,7 +49,7 @@ const authProvider = (router) => {
         let token = generateJWTToken(user.toJSON());
         const noPassword = user;
         delete noPassword.password;
-        return res.json({ noPassword, token });
+        return res.json({ user: noPassword, token });
       });
     })(req, res);
   });
