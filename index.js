@@ -34,6 +34,7 @@ app.use(morgan("common"));
 // CORS integration
 const cors = require("cors");
 let allowedOrigins = [
+  "https://myflix-client-react-redux.netlify.app",
   "http://localhost:8080",
   "http://testsite.com",
   "http://localhost:1234",
