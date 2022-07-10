@@ -35,6 +35,7 @@ app.use(morgan("common"));
 const cors = require("cors");
 let allowedOrigins = [
   "https://myflix-client-react-redux.netlify.app",
+  "https://sonam-22.github.io/myFlix-Angular-client",
   "http://localhost:8080",
   "http://testsite.com",
   "http://localhost:1234",
